@@ -1,0 +1,23 @@
+{
+	"schemaVersion": 1,
+	"id": "entice",
+	"version": "${version}",
+	"name": "Entice",
+	"entrypoints": {
+		"client": [
+			"dev.aperso.entice.Entice"
+		]
+	},
+	"mixins": [
+		{
+			"environment": "client",
+			"config": "entice.mixins.json"
+		}
+	],
+	"depends": {
+		"java": ">=21",
+		"fabricloader": ">=0.16.9",
+		"minecraft": "~1.21.1",
+		"fabric-api": "*"
+	}
+}

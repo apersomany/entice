@@ -1,0 +1,7 @@
+{
+	"package": "dev.aperso.entice.indicator.mixin",
+	"mixins": [
+		"IrisRenderingPipelineMixin",
+		"ShaderPackMixin"
+	]
+}

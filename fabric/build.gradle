@@ -1,0 +1,49 @@
+plugins {
+    id "fabric-loom" version "1.9-SNAPSHOT"
+}
+
+group = project.maven_group
+version = project.mod_version
+
+base {
+    archivesName = project.base_archive_name
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+loom {
+    runClient {
+        args
+    }
+}
+
+repositories {
+    maven {
+        url = "https://api.modrinth.com/maven"
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+    mappings loom.officialMojangMappings()
+
+    modImplementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    modImplementation "maven.modrinth:sodium:r9o9ggVu"
+    modImplementation "maven.modrinth:iris:IzngD3Cy"
+
+    implementation project(":packet")
+    include project(":packet")
+    include "org.apache.fury:fury-core:0.9.0"
+}
+
+processResources {
+    def version = project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": version
+    }
+}
