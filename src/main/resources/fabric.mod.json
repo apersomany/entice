@@ -1,0 +1,12 @@
+{
+	"schemaVersion": 1,
+	"id": "entice",
+	"version": "0.1.0",
+	"name": "Entice",
+	"mixins": ["entice.mixins.json"],
+	"entrypoints": {
+		"client": [
+			"dev.aperso.entice.EnticeClient"
+		]
+	}
+}

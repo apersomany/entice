@@ -1,0 +1,6 @@
+name: Entice
+version: 0.1.0
+main: dev.aperso.entice.EnticeServer
+api-version: 1.21.1
+libraries:
+  - org.apache.fury:fury-core:0.10.0
