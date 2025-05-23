@@ -1,6 +1,0 @@
-main: dev.aperso.entice.Entice
-name: Entice
-version: "${version}"
-api-version: "1.21.1"
-libraries:
-  - "org.apache.fury:fury-core:0.9.0"
