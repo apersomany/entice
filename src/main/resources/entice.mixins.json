@@ -1,7 +1,8 @@
 {
-	"package": "dev.aperso.entice.mixin",
-	"client": [
-		"GameRendererMixins",
-		"LevelRendererMixin"
-	]
+  "package": "dev.aperso.entice.mixin",
+  "client": [
+    "GameRendererMixins",
+    "LevelRendererMixin",
+    "EffectInstanceMixin"
+    ]
 }

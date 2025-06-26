@@ -32,7 +32,7 @@ public class RangeIndicatorDecal extends AnchoredDecal {
 		ShaderInstance shader(float scale);
 	}
 
-	public static float HEIGHT = 4;
+	public static float HEIGHT = 8;
 
 	public record Circle(float radius) implements Shape {
 		@Override

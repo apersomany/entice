@@ -15,6 +15,7 @@ import io.lumine.mythic.core.skills.SkillExecutor;
 import io.lumine.mythic.core.skills.SkillMechanic;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -74,55 +75,64 @@ public abstract class IndicatedSkillMechanic extends SkillMechanic implements IM
 
 	public abstract RangeIndicatorDecal.Shape shape();
 
-	public SkillResult cast(SkillMetadata metadata) {
-		if (this.skill != null) {
-			Entity caster = metadata.getCaster().getEntity().getBukkitEntity();
-			AnchoredDecal.Anchor anchor = switch (plane) {
-				case INITIAL -> {
-					Location location = caster.getLocation();
-					yield new AnchoredDecal.StaticAnchor(
-						caster.getLocation().toVector().toVector3f(),
-						location.getYaw()
-					);
-				}
-				case TRACKED -> {
-					try {
-						yield new AnchoredDecal.EntityAnchor((net.minecraft.world.entity.Entity) caster.getClass().getDeclaredMethod("getHandle").invoke(caster));
-					} catch (Exception exception) {
-						throw new RuntimeException(exception);
-					}
-				}
-			};
-			RangeIndicatorDecal.Shape shape = shape();
-			RangeIndicatorDecal decal = new RangeIndicatorDecal(anchor, shape);
-			decal.offset = new Vector3f(x, 0, y);
-			decal.rot = rot;
-			decal.rev = rev;
-			decal.inset = inset;
-			decal.color = color;
-			decal.duration = delay;
-			if (progress) {
-				decal.scale = 0;
-				decal.scalePerTick = 1f / decal.duration;
-			}
-			caster.getWorld().sendPluginMessage(
-				EnticeServer.INSTANCE,
-				"entice:range_indicator_decal",
-				Entice.FURY.serializeJavaObject(decal)
-			);
-			SkillMetadata clonedMetadata = metadata.deepClone();
-			Bukkit.getScheduler().scheduleSyncDelayedTask(
-				this.getPlugin(),
-				() -> {
-					if (this.skill != null) {
-						this.skill.execute(clonedMetadata);
-					}
-				},
-				this.delay
-			);
-			return SkillResult.SUCCESS;
-		} else {
-			return SkillResult.ERROR;
+	public static Class<?> CraftEntity;
+
+	public static Method CraftEntityGetHandle;
+
+	static {
+		try {
+			CraftEntity = Class.forName("org.bukkit.craftbukkit.entity.CraftEntity");
+			CraftEntityGetHandle = CraftEntity.getDeclaredMethod("getHandle");
+		} catch (Exception exception) {
+			throw new RuntimeException(exception);
 		}
+	}
+
+	public SkillResult cast(SkillMetadata metadata) {
+		Entity caster = metadata.getCaster().getEntity().getBukkitEntity();
+		AnchoredDecal.Anchor anchor = switch (plane) {
+			case INITIAL -> {
+				Location location = caster.getLocation();
+				yield new AnchoredDecal.StaticAnchor(
+					caster.getLocation().toVector().toVector3f(),
+					location.getYaw()
+				);
+			}
+			case TRACKED -> {
+				try {
+					yield new AnchoredDecal.EntityAnchor((net.minecraft.world.entity.Entity) CraftEntityGetHandle.invoke(caster));
+				} catch (Exception exception) {
+					throw new RuntimeException(exception);
+				}
+			}
+		};
+		RangeIndicatorDecal.Shape shape = shape();
+		RangeIndicatorDecal decal = new RangeIndicatorDecal(anchor, shape);
+		decal.offset = new Vector3f(x, 0, y);
+		decal.rot = rot;
+		decal.rev = rev;
+		decal.inset = inset;
+		decal.color = color;
+		decal.duration = delay;
+		if (progress) {
+			decal.scale = 0;
+			decal.scalePerTick = 1f / decal.duration;
+		}
+		caster.getWorld().sendPluginMessage(
+			EnticeServer.INSTANCE,
+			"entice:range_indicator_decal",
+			Entice.FURY.serializeJavaObject(decal)
+		);
+		SkillMetadata clonedMetadata = metadata.deepClone();
+		Bukkit.getScheduler().scheduleSyncDelayedTask(
+			this.getPlugin(),
+			() -> {
+				if (this.skill != null) {
+					this.skill.execute(clonedMetadata);
+				}
+			},
+			this.delay
+		);
+		return SkillResult.SUCCESS;
 	}
 }

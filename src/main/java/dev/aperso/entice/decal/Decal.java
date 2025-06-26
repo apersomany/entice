@@ -3,12 +3,17 @@ package dev.aperso.entice.decal;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
+import org.lwjgl.opengl.GL11;
 
 public abstract class Decal {
 	public Vector3f origin = new Vector3f();
@@ -46,7 +51,6 @@ public abstract class Decal {
 			false,
 			RenderType.CompositeState.builder()
 				.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
-				.setCullState(RenderStateShard.NO_CULL)
 				.setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
 				.createCompositeState(false)
 		);
@@ -69,12 +73,14 @@ public abstract class Decal {
 		Client.renderType.setupRenderState();
 		Client.vertexBuffer.bind();
 		RenderSystem.disableDepthTest();
+		GL11.glCullFace(GL11.GL_FRONT);
 		Client.vertexBuffer.drawWithShader(
 			RenderSystem.getModelViewMatrix(),
 			RenderSystem.getProjectionMatrix(),
 			shader
 		);
-		RenderSystem.disableDepthTest();
+		GL11.glCullFace(GL11.GL_BACK);
+		RenderSystem.enableDepthTest();
 		Client.renderType.clearRenderState();
 	}
 
@@ -83,27 +89,36 @@ public abstract class Decal {
 		modelViewStack.pushMatrix();
 		modelViewStack.mul(viewMatrix);
 		modelViewStack.translate(camera.getPosition().toVector3f().negate());
-		modelViewStack.translate(origin());
-		modelViewStack.rotateY(rev() * (float) Math.PI / 180 * -1);
-		modelViewStack.translate(offset());
-		modelViewStack.rotateY(rot() * (float) Math.PI / 180);
-		RenderSystem.applyModelViewMatrix();
-		Matrix4f mvpInvMat = new Matrix4f(RenderSystem.getProjectionMatrix()).mul(RenderSystem.getModelViewMatrix()).invert();
-		modelViewStack.scale(volume());
+		Matrix4f modelMatrix = modelMatrix();
+		modelViewStack.mul(modelMatrix);
+		Matrix4f mvpInvMat = new Matrix4f(RenderSystem.getProjectionMatrix()).mul(modelViewStack).invert();
+		Vector3f volume = volume();
+		modelViewStack.scale(volume);
 		ShaderInstance shader = shader();
 		shader.safeGetUniform("MvpInvMat").set(mvpInvMat);
 		RenderSystem.applyModelViewMatrix();
 		modelViewStack.popMatrix();
+//		Vec3 cameraPositionWorld = camera.getPosition();
+//		Vector4f cameraPositionLocal = new Vector4f(
+//			(float) cameraPositionWorld.x,
+//			(float) cameraPositionWorld.y,
+//			(float) cameraPositionWorld.z,
+//			1
+//		);
+//		cameraPositionLocal.mul(modelMatrix.invertAffine());
+//		boolean insideVolume = true;
+//		insideVolume &= Math.abs(cameraPositionLocal.x) * 2 < volume.x;
+//		insideVolume &= Math.abs(cameraPositionLocal.y) * 2 < volume.y;
+//		insideVolume &= Math.abs(cameraPositionLocal.z) * 2 < volume.z;
 		draw(shader);
 	}
 
-//	public Matrix4f modelMatrixInverse(Vector3f camera) {
-//		Matrix4f matrix = new Matrix4f();
-//		matrix.translate(camera);
-//		matrix.translate(origin());
-//		matrix.rotateY(rev() * (float) Math.PI / 180 * -1);
-//		matrix.translate(offset());
-//		matrix.rotateY(rot() * (float) Math.PI / 180);
-//		return matrix.invert();
-//	}
+	public Matrix4f modelMatrix() {
+		Matrix4f matrix = new Matrix4f();
+		matrix.translate(origin());
+		matrix.rotateY(rev() * (float) Math.PI / 180 * -1);
+		matrix.translate(offset());
+		matrix.rotateY(rot() * (float) Math.PI / 180);
+		return matrix;
+	}
 }

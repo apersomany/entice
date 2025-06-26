@@ -1,13 +1,13 @@
 package dev.aperso.entice;
 
+import dev.aperso.entice.decal.AnchoredDecal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
 import org.apache.fury.Fury;
 import org.apache.fury.ThreadSafeFury;
 import org.apache.fury.memory.MemoryBuffer;
 import org.apache.fury.serializer.Serializer;
+import org.joml.Vector3f;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -15,7 +15,9 @@ import java.util.function.Function;
 public class Entice {
 	public static ThreadSafeFury FURY = Fury.builder()
 		.requireClassRegistration(false)
-			.buildThreadSafeFury();
+		.withAsyncCompilation(true)
+		.withCodegen(true)
+		.buildThreadSafeFury();
 
 	public static ResourceLocation resource(String path) {
 		return ResourceLocation.fromNamespaceAndPath("entice", path);
@@ -23,24 +25,24 @@ public class Entice {
 
 	static {
 		FURY.setClassChecker((classResolver, className) -> true);
-		Function<Fury, Serializer<?>> entitySerializer = (fury) -> new Serializer<>(fury, Entity.class) {
+		Function<Fury, Serializer<?>> entityAnchorSerializer = (fury) -> new Serializer<>(fury, AnchoredDecal.EntityAnchor.class) {
 			@Override
-			public Entity read(MemoryBuffer buffer) {
-				return Objects.requireNonNull(Minecraft.getInstance().getConnection()).getLevel().getEntity(buffer.readInt32());
+			public  AnchoredDecal.EntityAnchor read(MemoryBuffer buffer) {
+				try {
+					return new AnchoredDecal.EntityAnchor(Objects.requireNonNull(Minecraft.getInstance().getConnection()).getLevel().getEntity(buffer.readInt32()));
+				} catch (Exception exception) {
+					return new AnchoredDecal.EntityAnchor(null);
+				}
 			}
 
 			@Override
-			public void write(MemoryBuffer buffer, Entity value) {
-				buffer.writeInt32(value.getId());
+			public void write(MemoryBuffer buffer,  AnchoredDecal.EntityAnchor value) {
+				buffer.writeInt32(value.entity().getId());
 			}
 		};
 		FURY.registerSerializer(
-			Entity.class,
-			entitySerializer
-		);
-		FURY.registerSerializer(
-			ServerPlayer.class,
-			entitySerializer
+			AnchoredDecal.EntityAnchor.class,
+			entityAnchorSerializer
 		);
 	}
 }

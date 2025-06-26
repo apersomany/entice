@@ -4,7 +4,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import org.joml.Vector3f;
 
-
 public abstract class AnchoredDecal extends Decal {
 	public interface Anchor {
 		Vector3f origin();
@@ -16,12 +15,14 @@ public abstract class AnchoredDecal extends Decal {
 	public record EntityAnchor(Entity entity) implements Anchor {
 		@Override
 		public Vector3f origin() {
+			if (entity == null || entity.isRemoved()) return new Vector3f(Float.POSITIVE_INFINITY);
 			float tickDelta = Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false);
 			return entity.getPosition(tickDelta).toVector3f();
 		}
 
 		@Override
 		public float rev() {
+			if (entity == null || entity.isRemoved()) return Float.POSITIVE_INFINITY;
 			return entity.getYRot();
 		}
 	}
