@@ -21,6 +21,14 @@ repositories {
     maven("https://api.modrinth.com/maven")
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://mvn.lumine.io/repository/maven-public/")
+    maven("https://maven.ladysnake.org/releases") {
+        content {
+            includeGroup("io.github.ladysnake")
+            includeGroup("org.ladysnake")
+            includeGroupByRegex("'dev\\.onyxstudios.*'")
+        }
+    }
+
 }
 
 dependencies {
@@ -30,6 +38,7 @@ dependencies {
     // Fabric
     modImplementation("net.fabricmc:fabric-loader:0.16.10")
     modImplementation("net.fabricmc.fabric-api:fabric-api:0.115.4+1.21.1")
+    modImplementation(include("org.ladysnake:satin:2.0.0")!!)
     // Common Dependencies
     modImplementation(include("org.apache.fury:fury-core:0.10.0")!!)
     // Fabric Dependencies

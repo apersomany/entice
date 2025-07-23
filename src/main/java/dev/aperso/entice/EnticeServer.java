@@ -2,6 +2,7 @@ package dev.aperso.entice;
 
 import dev.aperso.entice.addon.mythic.MythicAddon;
 import dev.aperso.entice.decal.RangeIndicatorDecal;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;

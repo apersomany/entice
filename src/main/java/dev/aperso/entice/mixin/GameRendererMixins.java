@@ -1,7 +1,6 @@
 package dev.aperso.entice.mixin;
 
 import dev.aperso.entice.decal.RangeIndicatorDecal;
-import dev.aperso.entice.filter.SobelFilter;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,14 +16,8 @@ public abstract class GameRendererMixins {
 	public void onReloadShaders(ResourceProvider resourceProvider, CallbackInfo ci) {
 		try {
 			RangeIndicatorDecal.Client.onReloadShaders(resourceProvider);
-			SobelFilter.onReloadShaders();
 		} catch (IOException exception) {
 			throw new RuntimeException(exception);
 		}
-	}
-
-	@Inject(method = "resize", at = @At("TAIL"))
-	public void onResize(int width, int height, CallbackInfo ci) {
-		if (SobelFilter.POST_CHAIN != null) SobelFilter.POST_CHAIN.resize(width, height);
 	}
 }
